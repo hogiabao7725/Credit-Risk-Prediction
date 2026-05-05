@@ -1,92 +1,44 @@
 # Credit Risk Prediction
 
-Du an du doan kha nang khach hang vo no trong ky tiep theo tren bo du lieu `UCI_Credit_Card`.
+A clear, student-friendly machine learning project for predicting credit default risk using the UCI credit card dataset.
 
-## Muc tieu
+## Project Goal
 
-- Xay dung quy trinh du doan rui ro tin dung ro rang, de tai lap.
-- So sanh nhieu mo hinh phan lop tren cung mot setup tien xu ly.
-- Danh gia theo cac metric phu hop bai toan mat can bang lop (Recall, F1, ROC-AUC).
-
-## Cau truc du an
-
-```text
-credit-risk-prediction/
-├── data/
-│   └── UCI_Credit_Card.csv
-├── credit_risk_prediction.ipynb
-├── requirements.txt
-└── README.md
-```
+- Build a reproducible credit risk workflow.
+- Focus on data understanding and preprocessing quality.
+- Compare common classification models with imbalance-aware metrics.
 
 ## Dataset
 
-- Ten: Default of Credit Card Clients Dataset
-- Nguon:
-  - [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients)
-  - [Kaggle mirror](https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset)
-- Kich thuoc: 30,000 dong x 24 cot
-- Target: `default.payment.next.month` (1 = vo no, 0 = khong vo no)
+- **Name:** Default of Credit Card Clients
+- **Source:** [UCI Repository](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients) (also available on Kaggle mirrors)
+- **Size:** 30,000 rows, 24 columns
+- **Target:** `default.payment.next.month` (`1` = default, `0` = non-default)
 
-## Cai dat
+## Main Notebook
 
-Yeu cau:
-- Python 3.9+
-- Jupyter Notebook/JupyterLab
+- `credit_risk_prediction.ipynb`
 
-Cai thu vien:
+## Workflow in Notebook
+
+1. Load data and review columns
+2. Data quality audit (missing, duplicates, category checks, imbalance)
+3. EDA (numerical, categorical, payment behavior)
+4. Simple feature engineering for credit behavior
+5. Train models one-by-one and print separate results
+6. Compare models with `Accuracy`, `Precision`, `Recall`, `F1-score`, `ROC-AUC`
+7. Final recommendation and practical risk note
+
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
-```
-
-## Cach chay notebook
-
-1. Tai file `UCI_Credit_Card.csv` va dat vao thu muc `data/`.
-2. Mo Jupyter:
-
-```bash
 jupyter notebook
 ```
 
-3. Mo file `credit_risk_prediction.ipynb`.
-4. Chay lan luot tat ca cells tu tren xuong.
+Then open `credit_risk_prediction.ipynb` and run cells from top to bottom.
 
-## Logic trong notebook
+## Notes
 
-Notebook da duoc to chuc theo flow sau:
-
-1. Import thu vien va cau hinh
-2. Load du lieu + dataset overview
-3. EDA co ban (phan bo target, nhom bien thanh toan, bill, pay amount)
-4. Chia train/test theo stratify
-5. Tien xu ly bang `ColumnTransformer` + `Pipeline`
-6. Train va so sanh 6 mo hinh:
-   - Logistic Regression
-   - KNN
-   - Naive Bayes
-   - SVM
-   - Decision Tree
-   - Random Forest
-7. Danh gia bang:
-   - Cross-validation metrics
-   - Test Precision/Recall/F1/ROC-AUC
-   - Confusion Matrix
-8. Chon mo hinh tot nhat va phan tich feature importance (neu ho tro)
-
-## Luu y hoc thuat
-
-- De tranh data leakage, moi buoc impute/scale/encode deu nam trong pipeline va duoc fit tren train set.
-- Bai toan credit risk thuong uu tien phat hien dung lop vo no, vi vay can theo doi Recall va F1 ben canh Accuracy.
-
-## Huong cai thien
-
-- Hyperparameter tuning (`GridSearchCV`, `RandomizedSearchCV`, `Optuna`)
-- Thu mo hinh boosting (`XGBoost`, `LightGBM`, `CatBoost`)
-- Threshold tuning theo business cost
-
-## Tai lieu tham khao
-
-- [Scikit-learn documentation](https://scikit-learn.org/stable/)
-- [Pandas documentation](https://pandas.pydata.org/docs/)
-- [Seaborn documentation](https://seaborn.pydata.org/)
+- Preprocessing is handled inside a pipeline to reduce leakage risk.
+- Since the data is imbalanced, model selection should prioritize **F1-score** and **Recall**, not only Accuracy.
