@@ -44,8 +44,7 @@ class TrainingBundle:
     test_shape: tuple[int, int]
 
 
-@st.cache_resource(show_spinner="Training models from notebook pipeline...")
-def train_models(clean_df: pd.DataFrame) -> TrainingBundle:
+def build_training_bundle(clean_df: pd.DataFrame) -> TrainingBundle:
     X = clean_df.drop(columns=[TARGET_COL])
     y = clean_df[TARGET_COL]
     X_train, X_test, y_train, y_test = train_test_split(
@@ -91,7 +90,7 @@ def train_models(clean_df: pd.DataFrame) -> TrainingBundle:
     artifacts: dict[str, ModelArtifact] = {}
     for name, estimator in estimators.items():
         pipe = Pipeline([("preprocessor", preprocessor), ("model", estimator)])
-        cv_f1 = cross_val_score(pipe, X_train, y_train, cv=cv, scoring="f1", n_jobs=-1).mean()
+        cv_f1 = cross_val_score(pipe, X_train, y_train, cv=cv, scoring="f1", n_jobs=1).mean()
         pipe.fit(X_train, y_train)
         pred = pd.Series(pipe.predict(X_test), index=y_test.index, name="pred")
         prob = pd.Series(pipe.predict_proba(X_test)[:, 1], index=y_test.index, name="prob")
@@ -126,3 +125,8 @@ def train_models(clean_df: pd.DataFrame) -> TrainingBundle:
         train_shape=X_train.shape,
         test_shape=X_test.shape,
     )
+
+
+@st.cache_resource(show_spinner="Training models from notebook pipeline...")
+def train_models(clean_df: pd.DataFrame) -> TrainingBundle:
+    return build_training_bundle(clean_df)

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
+from typing import Callable, TypeVar
 
 import numpy as np
 import pandas as pd
-import streamlit as st
 
 from ui.credit_dashboard.config import (
     BILL_COLS,
@@ -12,6 +12,22 @@ from ui.credit_dashboard.config import (
     PAY_COLS,
     TARGET_COL,
 )
+
+F = TypeVar("F", bound=Callable)
+
+
+def _cache_data(**kwargs) -> Callable[[F], F]:
+    try:
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+
+        if get_script_run_ctx(suppress_warning=True) is None:
+            return lambda func: func
+
+        import streamlit as st
+
+        return st.cache_data(**kwargs)
+    except Exception:
+        return lambda func: func
 
 
 @dataclass(frozen=True)
@@ -23,12 +39,16 @@ class PreparationMetadata:
     cleaned_shape: tuple[int, int]
 
 
-@st.cache_data(show_spinner=False)
-def load_raw_data() -> pd.DataFrame:
+def read_raw_data() -> pd.DataFrame:
     df = pd.read_csv(DATA_PATH)
     if "ID" in df.columns:
         df = df.drop(columns=["ID"])
     return df
+
+
+@_cache_data(show_spinner=False)
+def load_raw_data() -> pd.DataFrame:
+    return read_raw_data()
 
 
 def _add_behavior_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -43,8 +63,7 @@ def _add_behavior_features(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-@st.cache_data(show_spinner=False)
-def prepare_clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, PreparationMetadata]:
+def prepare_dataset(df: pd.DataFrame) -> tuple[pd.DataFrame, PreparationMetadata]:
     clean_df = df.copy()
     clean_df["EDUCATION"] = clean_df["EDUCATION"].replace({0: 4, 5: 4, 6: 4})
     clean_df["MARRIAGE"] = clean_df["MARRIAGE"].replace({0: 3})
@@ -75,6 +94,11 @@ def prepare_clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, PreparationMetad
         cleaned_shape=clean_df.shape,
     )
     return clean_df, metadata
+
+
+@_cache_data(show_spinner=False)
+def prepare_clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, PreparationMetadata]:
+    return prepare_dataset(df)
 
 
 def build_customer_frame(raw_values: dict, feature_columns: list[str], metadata: PreparationMetadata) -> pd.DataFrame:

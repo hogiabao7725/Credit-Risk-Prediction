@@ -1,23 +1,27 @@
 import streamlit as st
 
+from ui.credit_dashboard.artifacts import load_training_package, render_missing_artifact_message
 from ui.credit_dashboard.charts import confusion_matrix_chart, feature_importance_chart, model_metric_chart
 from ui.credit_dashboard.components import insight, metric_card, page_hero, section_header, story_card, workflow_step
 from ui.credit_dashboard.config import MODEL_EXPLANATIONS
-from ui.credit_dashboard.data import load_raw_data, prepare_clean_data
-from ui.credit_dashboard.modeling import train_models
 
 
 def render_modeling_page() -> None:
-    df = load_raw_data()
-    clean_df, metadata = prepare_clean_data(df)
-    bundle = train_models(clean_df)
+    try:
+        package = load_training_package()
+    except FileNotFoundError:
+        render_missing_artifact_message()
+        st.stop()
+
+    bundle = package.bundle
+    metadata = package.metadata
 
     page_hero(
         "Machine Learning",
         "Train, compare, explain",
         "All models use the same preprocessing pipeline from the notebook, then they are compared with "
         "imbalance-aware metrics so the selected model is defensible.",
-        "Models: Logistic Regression, KNN, Naive Bayes, Decision Tree, Random Forest",
+        f"Models loaded from artifact | Created at: {package.created_at}",
     )
 
     c1, c2, c3, c4 = st.columns(4)

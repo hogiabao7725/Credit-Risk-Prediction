@@ -4,6 +4,8 @@ RANDOM_STATE = 42
 TARGET_COL = "default.payment.next.month"
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_PATH = ROOT_DIR / "UCI_Credit_Card.csv"
+ARTIFACT_DIR = ROOT_DIR / "artifacts"
+MODEL_BUNDLE_PATH = ARTIFACT_DIR / "model_bundle.joblib"
 
 PAY_COLS = ["PAY_0", "PAY_2", "PAY_3", "PAY_4", "PAY_5", "PAY_6"]
 BILL_COLS = [f"BILL_AMT{i}" for i in range(1, 7)]

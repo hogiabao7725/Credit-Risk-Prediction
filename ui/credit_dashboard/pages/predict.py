@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from ui.credit_dashboard.artifacts import load_training_package, render_missing_artifact_message
 from ui.credit_dashboard.charts import probability_gauge
 from ui.credit_dashboard.components import insight, metric_card, page_hero, section_header, story_card
 from ui.credit_dashboard.config import (
@@ -11,8 +12,7 @@ from ui.credit_dashboard.config import (
     PAY_COLS,
     SEX_LABELS,
 )
-from ui.credit_dashboard.data import build_customer_frame, load_raw_data, prepare_clean_data
-from ui.credit_dashboard.modeling import train_models
+from ui.credit_dashboard.data import build_customer_frame
 
 
 def _label_to_code(label_map: dict[int, str], selected: str) -> int:
@@ -21,9 +21,14 @@ def _label_to_code(label_map: dict[int, str], selected: str) -> int:
 
 
 def render_predict_page() -> None:
-    df = load_raw_data()
-    clean_df, metadata = prepare_clean_data(df)
-    bundle = train_models(clean_df)
+    try:
+        package = load_training_package()
+    except FileNotFoundError:
+        render_missing_artifact_message()
+        st.stop()
+
+    bundle = package.bundle
+    metadata = package.metadata
     artifact = bundle.artifacts[bundle.best_name]
 
     page_hero(
@@ -124,14 +129,11 @@ def render_predict_page() -> None:
         st.dataframe(feature_view, width="stretch", hide_index=True)
 
     section_header("Sample Predictions From Test Set")
-    sample_X = clean_df.drop(columns=["default.payment.next.month"]).head(8)
-    sample_prob = artifact.pipeline.predict_proba(sample_X)[:, 1]
-    sample_pred = (sample_prob >= 0.5).astype(int)
     sample_out = pd.DataFrame(
         {
-            "pred_prob_default": sample_prob,
-            "pred_label": sample_pred,
-            "actual": clean_df["default.payment.next.month"].head(8).values,
+            "pred_prob_default": artifact.prob.head(8).values,
+            "pred_label": artifact.pred.head(8).values,
+            "actual": artifact.y_test.head(8).values,
         }
     )
     st.dataframe(sample_out.style.format({"pred_prob_default": "{:.4f}"}), width="stretch", hide_index=True)
